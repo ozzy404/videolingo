@@ -14,30 +14,25 @@ def transcribe_audio(audio_path, language):
     return result["text"]
 
 def translate_text(text, target_lang):
-    # Зразкова реалізація перекладу. Тут можна інтегрувати офлайн-перекладач.
+    # Зразкова реалізація перекладу.
     translated_text = f"[Перекладено на {target_lang}]: " + text
     return translated_text
 
 def clone_voice(original_audio_path, translated_text, output_audio_path, target_lang="en"):
-    # Використовуємо gTTS для генерації аудіо.
+    """
+    Викликає локальний модуль голосового клонування (наприклад, GPT-SoVITS TTS),
+    який аналізує оригінальне аудіо та синтезує нове аудіо, що озвучує translated_text,
+    зберігаючи голосові характеристики оригіналу.
+    """
     try:
-        from gtts import gTTS
+        from core.all_tts_functions.gpt_sovits_tts import synthesize_voice
     except ImportError:
-        raise RuntimeError("Модуль gTTS не встановлено. Додайте його до requirements.txt")
-    # Маппінг мов для gTTS (для 'zh' використовуємо 'zh-cn')
-    gtts_lang_map = {
-        "en": "en",
-        "ru": "ru",
-        "fr": "fr",
-        "de": "de",
-        "it": "it",
-        "es": "es",
-        "ja": "ja",
-        "zh": "zh-cn"
-    }
-    lang = gtts_lang_map.get(target_lang, "en")
-    tts = gTTS(text=translated_text, lang=lang)
-    tts.save(output_audio_path)
+        raise RuntimeError(
+            "Модуль голосового клонування GPT-SoVITS TTS не знайдено. "
+            "Переконайтеся, що файл core/all_tts_functions/gpt_sovits_tts.py існує та налаштовано коректно."
+        )
+    # Викликаємо функцію для синтезу дубльованого аудіо.
+    synthesize_voice(original_audio_path, translated_text, output_audio_path)
 
 def merge_audio_video(video_path, new_audio_path, output_video_path):
     video = VideoFileClip(video_path)
@@ -48,11 +43,11 @@ def merge_audio_video(video_path, new_audio_path, output_video_path):
     audio.close()
 
 def process_video_dub(video_path, orig_lang, target_lang):
-    # Створюємо тимчасову директорію для обробки
+    # Створення тимчасової директорії для обробки
     temp_dir = tempfile.mkdtemp()
     audio_path = os.path.join(temp_dir, "original_audio.wav")
-    # gTTS генерує mp3 файл – тому розширення .mp3
-    dubbed_audio_path = os.path.join(temp_dir, "dubbed_audio.mp3")
+    # Вихідний аудіофайл можна зберігати як .wav або інший формат, що підтримує ваш модуль.
+    dubbed_audio_path = os.path.join(temp_dir, "dubbed_audio.wav")
     output_video_path = os.path.join(temp_dir, "dubbed_video.mp4")
 
     # 1. Витягуємо аудіо з відео
@@ -66,7 +61,7 @@ def process_video_dub(video_path, orig_lang, target_lang):
     translated_text = translate_text(transcription, target_lang)
     print("Перекладений текст:", translated_text)
     
-    # 4. Генеруємо аудіо через gTTS (зразок синтезу голосу)
+    # 4. Генеруємо аудіо із клонуванням голосу (використовуємо модуль GPT-SoVITS TTS)
     clone_voice(audio_path, translated_text, dubbed_audio_path, target_lang)
     
     # 5. Зливаємо нове аудіо з оригінальним відео
