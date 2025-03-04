@@ -4,7 +4,7 @@ from process_video import process_video_dub
 def process_video(video, orig_lang, target_lang):
     if video is None:
         return "Не завантажено відео"
-    # process_video_dub очікує шлях до файлу (Gradio автоматично зберігає завантажене відео у тимчасовому файлі)
+    # process_video_dub очікує шлях до файлу (Gradio зберігає завантажене відео у тимчасовому файлі)
     output_video_path = process_video_dub(video, orig_lang, target_lang)
     return output_video_path
 
