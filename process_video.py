@@ -15,16 +15,20 @@ def transcribe_audio(audio_path, language):
     return result["text"]
 
 def translate_text(text, target_lang):
-    # Тут можна інтегрувати офлайн‑перекладач (наприклад, argos‑translate)
-    # Для демонстрації просто повертаємо текст з приміткою
+    # Зразкова реалізація – тут можна інтегрувати офлайн-перекладач (наприклад, argos-translate)
     translated_text = f"[Перекладено на {target_lang}]: " + text
     return translated_text
 
 def clone_voice(original_audio_path, translated_text, output_audio_path):
-    # Шаблонна реалізація для озвучення тексту – НЕ клонування голосу
-    # Замість pyttsx3 інтегруйте локальний алгоритм клонування голосу (наприклад, RVC‑алгоритм)
-    import pyttsx3
-    engine = pyttsx3.init()
+    # Спроба ініціалізації pyttsx3. Якщо не вдається, повідомляємо про необхідність встановлення eSpeak.
+    try:
+        import pyttsx3
+        engine = pyttsx3.init()
+    except Exception as e:
+        raise RuntimeError(
+            "pyttsx3 не може ініціалізувати голосовий двигун. Переконайтеся, що eSpeak встановлено. "
+            "Виконайте в Colab: !apt-get update && apt-get install -y espeak"
+        ) from e
     engine.save_to_file(translated_text, output_audio_path)
     engine.runAndWait()
 
@@ -54,7 +58,7 @@ def process_video_dub(video_path, orig_lang, target_lang):
     translated_text = translate_text(transcription, target_lang)
     print("Перекладений текст:", translated_text)
 
-    # 4. Генерація нового аудіо із клонуванням голосу
+    # 4. Генерація нового аудіо із клонуванням голосу (зразкова реалізація)
     clone_voice(audio_path, translated_text, dubbed_audio_path)
 
     # 5. Об’єднання нового аудіо з оригінальним відео
